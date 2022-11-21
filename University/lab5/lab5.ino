@@ -12,9 +12,10 @@
 #define ENCODER2 A3
 
 void log(const char* functionName, int value);
+void log(const char* functionName, double value);
 void initLCD();
 void initRGB();
-void initButtons();
+void setupButtons();
 void setup();
 
 struct RGBPercentage {
@@ -24,121 +25,120 @@ struct RGBPercentage {
 };
 
 class PWM {
-  public:
-    const static int s_maxPWM = 255;
-    const static int s_minPWM = 0;
-    static int changePWMToPercentage(int pwm);
-    static int changePercentageToPWM(int percentage);
+public:
+  const static int s_maxPWM = 255;
+  const static int s_minPWM = 0;
+  static int changePWMToPercentage(int pwm);
+  static int changePercentageToPWM(int percentage);
 };
 
 class Encoder {
-  public:
-    Encoder(int pin1, int pin2);
-    void init() const;
-    void basicPooling();
-    void pooling();
-    bool isChanged() const;
-    bool isRight() const;
-    bool isLeft() const;
-    void clearRight();
-    void clearLeft();
-  private:
-    bool m_turnedLeft;
-    bool m_turnedRight;
-    int m_counter;
-    int m_previousReadingPin1;
-    int m_previousReadingPin2;
-    int m_timestamp;
-    int m_lastChangeTimestamp;
-    static const int s_DEBOUNCING_PERIOD = 100;
-    const int m_clkPin1;
-    const int m_clkPin2;
+public:
+  Encoder(int pin1, int pin2);
+  void setup() const;
+  void basicPooling();
+  void pooling();
+  bool isChanged() const;
+  bool isRight() const;
+  bool isLeft() const;
+  void clearRight();
+  void clearLeft();
+private:
+  bool m_turnedLeft;
+  bool m_turnedRight;
+  int m_counter;
+  int m_previousReadingPin1;
+  int m_previousReadingPin2;
+  int m_timestamp;
+  int m_lastChangeTimestamp;
+  static const int s_DEBOUNCING_PERIOD = 100;
+  const int m_clkPin1;
+  const int m_clkPin2;
 };
 
 class Button {
-  public:
-    Button(int buttonPin);
-    void init() const;
-    bool onHold();
-    bool onRelease();
-    bool onHoldFor(unsigned long requiredHoldTimeInMilis);
-    bool onHoldOnceFor(unsigned long requiredHoldTimeInMilis);
-    int getButtonPin() const;
-    bool isPressed() const;
-  private:
-    const static int s_debouncePeriod = 10;
-    const int m_buttonPin;
-    bool m_isPressed = false;
-    bool m_previousIsHeld = false;
-    bool m_onHoldOnceFor_activated = false;
-    int m_previousReading = HIGH;
-    unsigned long m_lastChangeTime = 0;
-    unsigned int m_alreadyHoldTime = 0;
-    unsigned long m_startTime = 0;
+public:
+  Button(int buttonPin);
+  void setup() const;
+  bool onHold();
+  bool onRelease();
+  bool onHoldFor(unsigned long requiredHoldTimeInMilis);
+  bool onHoldOnceFor(unsigned long requiredHoldTimeInMilis);
+  int getButtonPin() const;
+  bool isPressed() const;
+private:
+  const static int s_debouncePeriod = 10;
+  const int m_buttonPin;
+  bool m_isPressed = false;
+  bool m_previousIsHeld = false;
+  bool m_onHoldOnceFor_activated = false;
+  int m_previousReading = HIGH;
+  unsigned long m_lastChangeTime = 0;
+  unsigned int m_alreadyHoldTime = 0;
+  unsigned long m_startTime = 0;
 };
 
 class LED {
-  public:
-    LED(int ledPin, int pinMode, int pwm, bool isOn = true);
-    void init();
-    bool switchOnOff();
-    bool switchOff();
-    bool switchOn();
-    bool setBrightnessPWM(int pwm);
-    bool setBrightnessPercentage(int percentage);
-    String getLedMsg() const;
-    String getLedErrorMsg(const char* functionName, const char* message) const;
-    int getPin() const;
-    int getBrightnessPercentage() const;
-    bool getIsOn() const;
-  private:
-    int m_ledPin;
-    int m_pinMode;
-    int m_currentPWM;
-    bool m_isOn;
+public:
+  LED(int ledPin, int pinMode, int pwm, bool isOn = false);
+  void init();
+  bool switchOnOff();
+  bool switchOff();
+  bool switchOn();
+  bool setBrightnessPWM(int pwm);
+  bool setBrightnessPercentage(int percentage);
+  String getLedMsg() const;
+  String getLedErrorMsg(const char* functionName, const char* message) const;
+  int getPin() const;
+  int getBrightnessPercentage() const;
+  bool getIsOn() const;
+private:
+  int m_ledPin;
+  int m_pinMode;
+  int m_currentPWM;
+  bool m_isOn;
 };
 
 class LEDRGB {
-  public:
-    LEDRGB(int redPin, int greenPin, int bluePin);
-    void init();
-    bool ChangeColorPWM(int redPWM, int greenPWM, int bluePWM);
-    bool ChangeColorPercentage(int red, int green, int blue);
-    bool switchOnColor(char rgb);
-    bool switchOffColor(char rgb);
-    bool switchOnOff();
-    bool switchOn();
-    bool switchOff();
-  private:
-    static int getIndexOfLED(char ledColor);
-    LED m_leds[3];
-    RGBPercentage m_currentActiveColor;
-    RGBPercentage m_previousActiveColor;
-    static const int s_redIndex = 0;
-    static const int s_greenIndex = 1;
-    static const int s_blueIndex = 2;
-    static const int s_ledMode = OUTPUT;
+public:
+  LEDRGB(int redPin, int greenPin, int bluePin);
+  void init();
+  bool ChangeColorPWM(int redPWM, int greenPWM, int bluePWM);
+  bool ChangeColorPercentage(int red, int green, int blue);
+  bool switchOnColor(char rgb);
+  bool switchOffColor(char rgb);
+  bool switchOnOff();
+  bool switchOn();
+  bool switchOff();
+private:
+  static int getIndexOfLED(char ledColor);
+  LED m_leds[3];
+  RGBPercentage m_currentActiveColor;
+  RGBPercentage m_previousActiveColor;
+  static const int s_redIndex = 0;
+  static const int s_greenIndex = 1;
+  static const int s_blueIndex = 2;
+  static const int s_ledMode = OUTPUT;
 };
 
 class SerialHandler {
-  public:
-    void checkInput();
-  private:
-    bool isSetPercentageOfLEDRGB(const String& command) const;
-    void setPercentageOfLEDRGB(String);
+public:
+  void checkInput();
+private:
+  bool isSetPercentageOfLEDRGB(const String& command) const;
+  void setPercentageOfLEDRGB(String);
 };
 
 class MyADC {
-  public:
-    MyADC(int adcPin);
-    int getRead() const;
-    float getReadVoltage() const;
-  private:
-    const int m_adcPin;
-    static const int s_maxRead = 1023;
-    static const int s_minRead = 0;
-    static const int s_trimmed = 10;
-
+public:
+  MyADC(int adcPin);
+  int getRead() const;
+  float getReadVoltage() const;
+private:
+  const int m_adcPin;
+  static const int s_maxRead = 1023;
+  static const int s_minRead = 0;
+  static const int s_trimmed = 10;
 };
 
 // ATTRIBUTES
@@ -161,35 +161,28 @@ static bool isGreenPressed;
 static bool isRedPressed;
 
 void task_1() {
-  static RGBPercentage task1_currentColour = { 0, 0, 0};
   static int value = 0;
 
   s_lcd.print("Zadanie 1");
 
   s_encoder.pooling();
-  if (s_encoder.isChanged())
-  {
-    if (s_encoder.isLeft())
-    {
+  if (s_encoder.isChanged()) {
+    if (s_encoder.isLeft()) {
       log(__func__, "inside isLeft()!");
       value = max(value - 10, 0);
       s_encoder.clearLeft();
     }
 
-    if (s_encoder.isRight())
-    {
+    if (s_encoder.isRight()) {
       log(__func__, "inside isRight()!");
       value = min(value + 10, 200);
       s_encoder.clearRight();
     }
     int red = 0;
     int blue = 0;
-    if (value <= 100)
-    {
+    if (value <= 100) {
       red = value;
-    }
-    else if (value >= 100)
-    {
+    } else if (value >= 100) {
       blue = value - 100;
     }
 
@@ -203,14 +196,51 @@ void task_1() {
 
 void task_2() {
   static RGBPercentage task1_currentColour = { 0, 0, PWM::s_maxPWM };
+  static int currentOption = 0;
+  const int rowsNumber = 2;
+  static String msgsToPrint[] = {"Turn LED on   ", "Turn LED off  "};
+  static const int numberOfMsgs = (sizeof(msgsToPrint) / sizeof(String)); 
+  static bool updateLCD = true;
+  
+  // s_lcd.print("Zadanie 2");
 
+  s_encoder.pooling();
+  if (s_encoder.isChanged())
+  {
+    if (s_encoder.isRight())
+    {
+      currentOption = (currentOption + 1) % numberOfMsgs;
+      log(__func__, currentOption);
+      s_encoder.clearRight();
+    }
 
-  s_lcd.print("Zadanie 2");
+    if (s_encoder.isLeft())
+    {
+      currentOption = (currentOption - 1 >= 0) ? (currentOption - 1) : (numberOfMsgs - 1);
+      s_encoder.clearLeft();
+    }
 
-  s_serialHandler.checkInput();
+    for (int i = 0; i < rowsNumber; i++)
+    {
+      s_lcd.setCursor(0, i);
+      s_lcd.print(msgsToPrint[currentOption]);
+      currentOption = (currentOption + 1) % numberOfMsgs;
+    }
+  }
 
-  s_lcd.setCursor(0, 0);
+  if (s_buttons[c_GREEN_BUTTON_INDEX].onRelease())
+  {
+    if (currentOption == 0)
+    {
+      s_ledRGB.switchOn();
+    }
+    else if (currentOption == 1)
+    {
+      s_ledRGB.switchOff();
+    }
+  }
 }
+
 
 
 // int brightness = 0;
@@ -247,10 +277,9 @@ void task_3() {
 }
 
 void loop() {
-  task_1();
-  // task_2();
+  // task_1();
+  task_2();
   //  task_3();
-
 }
 
 
@@ -264,9 +293,9 @@ void initRGB() {
   s_ledRGB.init();
 }
 
-void initButtons() {
+void setupButtons() {
   for (const auto& button : s_buttons) {
-    button.init();
+    button.setup();
   }
 }
 
@@ -278,75 +307,70 @@ void log(const char* functionName, String msg) {
 
 void log(const char* functionName, int value) {
   Serial.print(functionName);
-  Serial.print(", value = ");
+  Serial.print(", ivalue = ");
+  Serial.println(value);
+}
+
+void log(const char* functionName, double value) {
+  Serial.print(functionName);
+  Serial.print(", dvalue = ");
   Serial.println(value);
 }
 
 void setup() {
   Serial.begin(9600);
   initRGB();
-  initButtons();
+  setupButtons();
   initLCD();
-  s_encoder.init();
+  s_encoder.setup();
   s_ledRGB.switchOn();
   PCICR |= (1 << PCIE1);
   PCMSK1 |= (1 << PCINT10);
 }
 
 int PWM::changePWMToPercentage(int pwm) {
-  return (pwm / s_maxPWM) * 100;
+  return (pwm * 100. / s_maxPWM);
 }
 
 int PWM::changePercentageToPWM(int percentage) {
   return (percentage / 100.) * s_maxPWM;
 }
 
-Encoder::Encoder(int pin1, int pin2) : m_turnedLeft(false), m_turnedRight(false), m_counter(0), m_previousReadingPin1(HIGH), m_previousReadingPin2(HIGH), m_timestamp(0), m_lastChangeTimestamp(0), m_clkPin1(pin1), m_clkPin2(pin2)
-{
-
+Encoder::Encoder(int pin1, int pin2)
+  : m_turnedLeft(false), m_turnedRight(false), m_counter(0), m_previousReadingPin1(HIGH), m_previousReadingPin2(HIGH), m_timestamp(0), m_lastChangeTimestamp(0), m_clkPin1(pin1), m_clkPin2(pin2) {
 }
 
-void Encoder::init() const
-{
+void Encoder::setup() const {
   pinMode(ENCODER1, INPUT_PULLUP);
   pinMode(ENCODER2, INPUT_PULLUP);
-
 }
 
-ISR(PCINT1_vect)
-{
+ISR(PCINT1_vect) {
   s_encoder.basicPooling();
 }
 
-void Encoder::basicPooling()
-{
+void Encoder::basicPooling() {
   m_previousReadingPin1 = digitalRead(m_clkPin1);
   m_previousReadingPin2 = digitalRead(m_clkPin2);
   m_timestamp = millis();
 }
-void Encoder::pooling()
-{
+void Encoder::pooling() {
   int en1 = 0;
   int en2 = 0;
   int timestamp = 0;
-  
-  ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-  {
+
+  ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
     en1 = m_previousReadingPin1;
     en2 = m_previousReadingPin2;
     timestamp = m_timestamp;
   }
 
-  if (en1 == LOW && m_timestamp > m_lastChangeTimestamp + s_DEBOUNCING_PERIOD)
-  {
-    if (en2 == HIGH)
-    {
+  if (en1 == LOW && m_timestamp > m_lastChangeTimestamp + s_DEBOUNCING_PERIOD) {
+    if (en2 == HIGH) {
       if (m_counter < 255)
         m_counter += 15;
       m_turnedRight = true;
-    }
-    else
-    {
+    } else {
       if (m_counter > 0)
         m_counter -= 15;
       m_turnedLeft = true;
@@ -357,26 +381,20 @@ void Encoder::pooling()
 }
 
 
-bool Encoder::isChanged() const
-{
+bool Encoder::isChanged() const {
   return m_turnedLeft || m_turnedRight;
 }
-bool Encoder::isRight() const
-{
+bool Encoder::isRight() const {
   return m_turnedRight;
-
 }
-bool Encoder::isLeft() const
-{
+bool Encoder::isLeft() const {
   return m_turnedLeft;
 }
 
-void Encoder::clearRight()
-{
+void Encoder::clearRight() {
   m_turnedRight = false;
 }
-void Encoder::clearLeft()
-{
+void Encoder::clearLeft() {
   m_turnedLeft = false;
 }
 
@@ -384,7 +402,7 @@ Button::Button(int buttonPin)
   : m_buttonPin(buttonPin) {
 }
 
-void Button::init() const {
+void Button::setup() const {
   pinMode(m_buttonPin, INPUT_PULLUP);
 }
 
@@ -535,10 +553,8 @@ bool LED::getIsOn() const {
 }
 
 LEDRGB::LEDRGB(int redPin, int greenPin, int bluePin)
-  : m_currentActiveColor( {
-  0, 0, 0
-}), m_previousActiveColor({ 0, 0, 0 }),
-m_leds({ { redPin, s_ledMode, m_currentActiveColor.red }, { greenPin, s_ledMode, m_currentActiveColor.green }, { bluePin, s_ledMode, m_currentActiveColor.blue } }) {}
+  : m_currentActiveColor({ 0, 0, 0 }), m_previousActiveColor({ 0, 0, 0 }),
+    m_leds({ { redPin, s_ledMode, m_currentActiveColor.red }, { greenPin, s_ledMode, m_currentActiveColor.green }, { bluePin, s_ledMode, m_currentActiveColor.blue } }) {}
 
 void LEDRGB::init() {
   for (auto& led : m_leds) {
@@ -648,6 +664,6 @@ float MyADC::getReadVoltage() const {
   int lowRange = s_minRead + s_trimmed;
   int highRange = s_maxRead - s_trimmed;
   value = max(lowRange, min(highRange, value));
-  float voltage = (value / (s_maxRead - 2 * s_trimmed) ) * 5.0;
+  float voltage = (value / (s_maxRead - 2 * s_trimmed)) * 5.0;
   return voltage;
 }
