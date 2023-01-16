@@ -2,7 +2,7 @@ import random
 from enum import Enum
 import paho.mqtt.client as mqtt
 
-from mfrc522 import MFRC522
+# from mfrc522 import MFRC522
 
 import RPi.GPIO as GPIO
 import neopixel
@@ -31,30 +31,31 @@ class Color(Enum):
     ORANGE = (255, 128, 0)
 
 
-#Fake MFRC522
-# class MFRC522:
-#     PICC_REQIDL = "pic_reqidl"
-#     MI_OK = 0
-#     MI_ERR = 1
+# Fake MFRC522
+class MFRC522:
+    PICC_REQIDL = "pic_reqidl"
+    MI_OK = 0
+    MI_ERR = 1
+    MI_NOTAGGER = 2
 
-#     def __init__(self, successful=False):
-#         self.successful = successful
+    def __init__(self, successful=False):
+        self.successful = successful
 
-#     def MFRC522_Request(self, arg):
-#         if self.successful:
-#             return self.MI_OK, "exampleTag"
-#         return self.MI_ERR, "exampleTag"
+    def MFRC522_Request(self, arg):
+        if self.successful:
+            return self.MI_OK, "exampleTag"
+        return self.MI_ERR, "exampleTag"
 
-#     def MFRC522_Anticoll(self):
-#         if self.successful:
-#             return self.MI_OK, f'{random.randint(0, 10000)}'
-#         return self.MI_ERR, "exampleUid"
+    def MFRC522_Anticoll(self):
+        if self.successful:
+            return self.MI_OK, f'{random.randint(0, 10000)}'
+        return self.MI_ERR, "exampleUid"
 
 
 class RFIDHandler:
     def __init__(self):
         self.MIFAREReader = MFRC522()
-        self.prev_status = 2
+        self.prev_status = self.MIFAREReader.MI_NOTAGGER
         self.is_read = False
 
     def read(self):
@@ -68,7 +69,8 @@ class RFIDHandler:
                     print(f'DEBUG PRINT 0:{uid[0]}, type:{type(uid[0])} size:{len(uid)}')
                     self.prev_status = status
                     return uid[0]
-        elif status == self.MIFAREReader.MI_ERR and self.prev_status == self.MIFAREReader.MI_ERR:
+        # elif status == self.MIFAREReader.MI_ERR and self.prev_status == self.MIFAREReader.MI_ERR:
+        elif status == self.MIFAREReader.MI_NOTAGGER and self.prev_status == self.MIFAREReader.MI_NOTAGGER:
             self.is_read = False
         self.prev_status = status
         return None

@@ -3,8 +3,8 @@ import datetime
 import tkinter
 from threading import Thread
 
-from config import *
-from common import Connection, RFIDHandler, TOPIC, MyBuzzer, LEDHandler, MFRC522
+from Utils.config import *
+from Utils.common import Connection, RFIDHandler, TOPIC, MyBuzzer, LEDHandler, MFRC522
 
 
 class FakeRFID:

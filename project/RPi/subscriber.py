@@ -1,4 +1,4 @@
-from common import Connection, TOPIC
+from Utils.common import Connection, TOPIC
 
 
 class Subscriber(Connection):
