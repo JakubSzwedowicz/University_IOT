@@ -112,6 +112,7 @@ public:
   bool switchOff();
 private:
   static int getIndexOfLED(char ledColor);
+  void foo(RGBPercentage a);
   LED m_leds[3];
   RGBPercentage m_currentActiveColor;
   RGBPercentage m_previousActiveColor;
@@ -194,48 +195,41 @@ void task_1() {
   s_lcd.setCursor(0, 0);
 }
 
+
 void task_2() {
   static RGBPercentage task1_currentColour = { 0, 0, PWM::s_maxPWM };
   static int currentOption = 0;
   const int rowsNumber = 2;
-  static String msgsToPrint[] = {"Turn LED on   ", "Turn LED off  "};
-  static const int numberOfMsgs = (sizeof(msgsToPrint) / sizeof(String)); 
+  static String msgsToPrint[] = { "Turn LED on   ", "Turn LED off  " };
+  static const int numberOfMsgs = (sizeof(msgsToPrint) / sizeof(String));
   static bool updateLCD = true;
-  
+
   // s_lcd.print("Zadanie 2");
 
   s_encoder.pooling();
-  if (s_encoder.isChanged())
-  {
-    if (s_encoder.isRight())
-    {
+  if (s_encoder.isChanged()) {
+    if (s_encoder.isRight()) {
       currentOption = (currentOption + 1) % numberOfMsgs;
-      log(__func__, currentOption);
       s_encoder.clearRight();
     }
 
-    if (s_encoder.isLeft())
-    {
+    if (s_encoder.isLeft()) {
       currentOption = (currentOption - 1 >= 0) ? (currentOption - 1) : (numberOfMsgs - 1);
       s_encoder.clearLeft();
     }
 
-    for (int i = 0; i < rowsNumber; i++)
-    {
+    for (int i = 0; i < rowsNumber; i++) {
       s_lcd.setCursor(0, i);
       s_lcd.print(msgsToPrint[currentOption]);
       currentOption = (currentOption + 1) % numberOfMsgs;
     }
   }
 
-  if (s_buttons[c_GREEN_BUTTON_INDEX].onRelease())
-  {
-    if (currentOption == 0)
-    {
+  if (s_buttons[c_GREEN_BUTTON_INDEX].onRelease()) {
+    log(__func__, currentOption);
+    if (currentOption == 0) {
       s_ledRGB.switchOn();
-    }
-    else if (currentOption == 1)
-    {
+    } else if (currentOption == 1) {
       s_ledRGB.switchOff();
     }
   }
@@ -479,7 +473,7 @@ bool Button::isPressed() const {
 LED::LED(int ledPin, int pinMode, int pwm, bool isOn)
   : m_ledPin(ledPin), m_pinMode(pinMode), m_isOn(isOn), m_currentPWM(pwm) {
 }
-void LED::init() {
+void LED::init() { 
   pinMode(m_ledPin, m_pinMode);
   if (m_isOn) {
     switchOn();
@@ -506,6 +500,7 @@ bool LED::switchOn() {
   m_isOn = true;
   analogWrite(m_ledPin, m_currentPWM);
   log(__func__, m_isOn);
+  log("current led pwm=", m_currentPWM);
   return true;
 }
 
@@ -553,8 +548,9 @@ bool LED::getIsOn() const {
 }
 
 LEDRGB::LEDRGB(int redPin, int greenPin, int bluePin)
-  : m_currentActiveColor({ 0, 0, 0 }), m_previousActiveColor({ 0, 0, 0 }),
-    m_leds({ { redPin, s_ledMode, m_currentActiveColor.red }, { greenPin, s_ledMode, m_currentActiveColor.green }, { bluePin, s_ledMode, m_currentActiveColor.blue } }) {}
+  : m_currentActiveColor({ 100, 0, 0 }), m_previousActiveColor({ 0, 0, 0 }),
+    m_leds({ { redPin, s_ledMode, 255, m_currentActiveColor.red != 0 }, { greenPin, s_ledMode, PWM::changePercentageToPWM(m_currentActiveColor.green), m_currentActiveColor.green != 0 }, { bluePin, s_ledMode, PWM::changePercentageToPWM(m_currentActiveColor.blue), m_currentActiveColor.blue != 0 } }) {
+}
 
 void LEDRGB::init() {
   for (auto& led : m_leds) {

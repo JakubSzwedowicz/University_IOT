@@ -1,0 +1,21 @@
+1 {
+    "name": "MyLEDRGB",
+    "keywords": "led, ledrgb, blink",
+    "description": "Arduino Library for IoT Laboratory",
+    "repository": {
+        "type": "git",
+        "url": "todo..."
+    },
+    "authors": [
+        {
+            "name": "Jakub Szwedowicz",
+            "email": "jakub.szwedowicz@gmail.com",
+            "url": "todo....",
+            "maintainer": true
+        }
+    ],
+    "version": "1.0.0",
+    "homepage": "todo....",
+    "frameworks": "arduino",
+    "platforms": "*"
+}
