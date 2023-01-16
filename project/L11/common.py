@@ -2,7 +2,7 @@ import random
 from enum import Enum
 import paho.mqtt.client as mqtt
 
-# from mfrc522 import MFRC522
+from mfrc522 import MFRC522
 
 import RPi.GPIO as GPIO
 import neopixel
@@ -32,41 +32,45 @@ class Color(Enum):
 
 
 #Fake MFRC522
-class MFRC522:
-    PICC_REQIDL = "pic_reqidl"
-    MI_OK = 0
-    MI_ERR = 1
+# class MFRC522:
+#     PICC_REQIDL = "pic_reqidl"
+#     MI_OK = 0
+#     MI_ERR = 1
 
-    def __init__(self, successful=False):
-        self.successful = successful
+#     def __init__(self, successful=False):
+#         self.successful = successful
 
-    def MFRC522_Request(self, arg):
-        if self.successful:
-            return self.MI_OK, "exampleTag"
-        return self.MI_ERR, "exampleTag"
+#     def MFRC522_Request(self, arg):
+#         if self.successful:
+#             return self.MI_OK, "exampleTag"
+#         return self.MI_ERR, "exampleTag"
 
-    def MFRC522_Anticoll(self):
-        if self.successful:
-            return self.MI_OK, f'{random.randint(0, 10000)}'
-        return self.MI_ERR, "exampleUid"
+#     def MFRC522_Anticoll(self):
+#         if self.successful:
+#             return self.MI_OK, f'{random.randint(0, 10000)}'
+#         return self.MI_ERR, "exampleUid"
 
 
 class RFIDHandler:
     def __init__(self):
         self.MIFAREReader = MFRC522()
+        self.prev_status = 2
         self.is_read = False
 
     def read(self):
         (status, TagType) = self.MIFAREReader.MFRC522_Request(self.MIFAREReader.PICC_REQIDL)
-        if status == self.MIFAREReader.MI_OK:
-            (status, uid) = self.MIFAREReader.MFRC522_Anticoll()
-            if status == self.MIFAREReader.MI_OK:
-                if not self.is_read:
-                    self.is_read = True
-                    return uid
-                return None
-        else:
+        print(f'Status value: {status}, prev_status: {self.prev_status}, is_read: {self.is_read}')
+        if not self.is_read:
+            if status == self.MIFAREReader.MI_OK and self.prev_status != self.MIFAREReader.MI_OK:
+                self.is_read = True
+                (status, uid) = self.MIFAREReader.MFRC522_Anticoll()
+                if status == self.MIFAREReader.MI_OK:
+                    print(f'DEBUG PRINT 0:{uid[0]}, type:{type(uid[0])} size:{len(uid)}')
+                    self.prev_status = status
+                    return uid[0]
+        elif status == self.MIFAREReader.MI_ERR and self.prev_status == self.MIFAREReader.MI_ERR:
             self.is_read = False
+        self.prev_status = status
         return None
 
 
@@ -151,12 +155,14 @@ class LEDHandler:
         self.update_all()
 
 
-class Buzzer:
-    def __int__(self, pin):
+class MyBuzzer:
+    def __init__(self, pin):
         self.pin = pin
 
     def on(self):
-        GPIO.output(self.pin, True)
+        GPIO.output(self.pin, False)
 
     def off(self):
         GPIO.output(self.pin, True)
+
+

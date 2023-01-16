@@ -3,8 +3,8 @@ import datetime
 import tkinter
 from threading import Thread
 
-from ..raspberry_pi_program_testowy.config import *
-from common import Connection, RFIDHandler, TOPIC, Buzzer, LEDHandler, MFRC522
+from config import *
+from common import Connection, RFIDHandler, TOPIC, MyBuzzer, LEDHandler, MFRC522
 
 
 class FakeRFID:
@@ -31,16 +31,17 @@ class Publisher(Connection):
         super().__init__()
         self.topic = topic
 
-    def publish(self, card_id, log_time):
-        self.send(self.topic, card_id + ';' + log_time)
+    def publish(self, card_id: int, log_time: str):
+        self.send(self.topic, str(card_id) + ';' + log_time)
 
 
 if __name__ == '__main__':
     rfid_handler = RFIDHandler()
     pub = Publisher(TOPIC)
     led = LEDHandler()
-    buzzer = Buzzer(buzzerPin)
-    Thread(target=lambda: FakeRFID(rfid_handler.MIFAREReader)).start()
+    buzzer = MyBuzzer(buzzerPin)
+    # Thread(target=lambda: FakeRFID(rfid_handler.MIFAREReader)).start()
+    buzzer.off()
 
     pub.connect()
 
