@@ -1,5 +1,7 @@
 import random
 from enum import Enum
+from abc import ABCMeta, abstractmethod
+from typing import List, Optional
 import paho.mqtt.client as mqtt
 
 # from mfrc522 import MFRC522
@@ -8,6 +10,7 @@ import RPi.GPIO as GPIO
 import neopixel
 import board
 
+# TODO: Move to the 'Devices' in the future 
 TOPIC = 'id/card'
 
 
@@ -52,13 +55,19 @@ class MFRC522:
         return self.MI_ERR, "exampleUid"
 
 
-class RFIDHandler:
+class IRFIDHandler(metaclass=ABCMeta):
+    @abstractmethod
+    def read(self) -> Optional[int]:
+        pass
+
+
+class RFIDHandler(IRFIDHandler):
     def __init__(self):
         self.MIFAREReader = MFRC522()
         self.prev_status = self.MIFAREReader.MI_NOTAGGER
         self.is_read = False
 
-    def read(self):
+    def read(self) -> Optional[int]:
         (status, TagType) = self.MIFAREReader.MFRC522_Request(self.MIFAREReader.PICC_REQIDL)
         print(f'Status value: {status}, prev_status: {self.prev_status}, is_read: {self.is_read}')
         if not self.is_read:
@@ -90,10 +99,29 @@ class Connection:
     def send(self, topic: str, message: str):
         self.client.publish(topic, message)
 
+class neopixel:
+    class NeoPixel:
+        def __init__(self, board: board, number_of_diodes: int, brightness: float, auto_write: bool) -> None:
+            self.board = board
+            self.number_of_diodes = number_of_diodes
+            self.brightness = brightness
+            self.auto_write = auto_write
+            self.diodes: int = [i for i in range(number_of_diodes)]
 
-class LEDHandler:
+        def __getitem__(self, index: int) -> int:
+            return self.diodes[index]
+
+class board:
+    class D18:
+        def __init__(self) -> None:
+            pass
+
+
+class ILEDHandler(metaclass=ABCMeta):
     class InnerColor:
-        def __init__(self, r, g, b, brightness):
+        def __init__(self, r, g, b, brightness: float):
+            if not 0 <= brightness <= 1.0:
+                raise ValueError(f'Invalid value for brightness: "{brightness}"')
             self.r = r
             self.g = g
             self.b = b
@@ -101,60 +129,68 @@ class LEDHandler:
 
         @classmethod
         def black(cls):
-            return cls(*Color.BLACK.value, 1)
+            return cls(*Color.BLACK.value, 1.0)
 
         @property
-        def color(self):
+        def rgb(self):
             return int(self.r * self.brightness), int(self.g * self.brightness), int(self.b * self.brightness)
 
-        @color.setter
-        def color(self, color_tuple):
-            self.r, self.g, self.b = color_tuple
+        @rgb.setter
+        def rgb(self, rgb: Color):
+            self.r, self.g, self.b = rgb.value
 
-    def __init__(self, brightness=1.0 / 32, auto_write=False):
-        self.__pixels = neopixel.NeoPixel(board.D18, 8, brightness=brightness, auto_write=auto_write)
-        self.__colors = [self.InnerColor.black() for _ in range(8)]
+    def __init__(self, diodes: neopixel.NeoPixel, colors: List[InnerColor]):
+        self._diodes = diodes
+        self._colors = colors
         self.update_all()
+        pass
 
     def update_all(self):
-        for i in range(len(self.__colors)):
-            self.__pixels[i] = self.__colors[i].color
-        self.__pixels.show()
+        for i in range(len(self._colors)):
+            self._diodes[i] = self._colors[i].rgb
+        self._diodes.show()
 
-    def set_color_all(self, color_tuple):
+    def set_color_all(self, rgb: Color):
         for color in self.__colors:
-            color.color = color_tuple
+            color.rgb = rgb
         self.update_all()
-
-    def slow_load(self):
-        self.set_rainbow()
-        divider = 100
-        index = 0
-        prev_index = 0
-        self.__pixels[index] = self.__colors[index].color
-        for i in range(divider * 8 + 2):
-            index = int(i / divider)
-            if index != prev_index:
-                prev_index = index
-                self.__pixels[index] = self.__colors[index].color
 
     def clear(self):
         self.set_color_all(Color.BLACK.value)
         self.update_all()
 
     def set_rainbow(self):
-        self.__colors[0].color = Color.RED.value
-        self.__colors[1].color = Color.ORANGE.value
-        self.__colors[2].color = Color.YELLOW.value
-        self.__colors[3].color = Color.LIME.value
-        self.__colors[4].color = Color.GREEN.value
-        self.__colors[5].color = Color.CYAN.value
-        self.__colors[6].color = Color.BLUE.value
-        self.__colors[7].color = Color.PURPLE.value
+        self._colors[0].rgb = Color.RED.value
+        self._colors[1].rgb = Color.ORANGE.value
+        self._colors[2].rgb = Color.YELLOW.value
+        self._colors[3].rgb = Color.LIME.value
+        self._colors[4].rgb = Color.GREEN.value
+        self._colors[5].rgb = Color.CYAN.value
+        self._colors[6].rgb = Color.BLUE.value
+        self._colors[7].rgb = Color.PURPLE.value
 
     def rainbow(self):
         self.set_rainbow()
         self.update_all()
+
+
+class LEDHandler(ILEDHandler):
+    def __init__(self, brightness=1.0 / 32, auto_write=False):
+        super().__init__(
+            neopixel.NeoPixel(board.D18, 8, brightness=brightness, auto_write=auto_write),
+            [self.InnerColor.black() for _ in range(8)])
+
+    def slow_load(self):
+        self.set_rainbow()
+        divider = 100
+        index = 0
+        prev_index = 0
+        self.__diodes[index] = self.__colors[index].rgb
+        for i in range(divider * 8 + 2):
+            index = int(i / divider)
+            if index != prev_index:
+                prev_index = index
+                self.__diodes[index] = self.__colors[index].rgb
 
 
 class MyBuzzer:

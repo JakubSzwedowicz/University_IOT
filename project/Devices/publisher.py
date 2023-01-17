@@ -1,11 +1,16 @@
 import time
 import datetime
 import tkinter
+from typing import Dict, List
 from threading import Thread
 
 from Utils.config import *
-from Utils.common import Connection, RFIDHandler, TOPIC, MyBuzzer, LEDHandler, MFRC522
+from Utils.common import Connection, RFIDHandler, TOPIC, MyBuzzer, ILEDHandler, MFRC522
 
+
+class DevicesEmulator:
+    def __init__(self, card_reader_with_leds: Dict[MFRC522, List[ILEDHandler]]) -> None:
+        
 
 class FakeRFID:
     def __init__(self, mfrc: MFRC522):
