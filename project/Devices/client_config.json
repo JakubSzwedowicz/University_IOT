@@ -1,0 +1,22 @@
+{
+    "config": {
+        "name": "Client access license",
+        "version": "1.0.0",
+        "description": "Configuration file used to establish communication between publishers and subscribers. It is required for the subscriber to use provided license key to access the publisher's content.",
+        "issuer": "",
+        "topics": [
+            {
+                "name": "id/card",
+                "description": "Topic to publish access request for the ID card",
+                "request_form": 
+            },
+            {
+                "name": "topic2",
+                "description": "Topic 2 description",
+                "license_key": "license_key_2"
+            }
+        ]
+    }
+}
+
+ip: str = 'localhost', port: int = 1883, client_id: str = ''

@@ -1,0 +1,5 @@
+{
+    "access_level": ["L1", "L2", "L3"],
+    "card_status": ["active", "inactive"],
+    "authorization_message_status": ["request", "accepted", "declined"]
+}

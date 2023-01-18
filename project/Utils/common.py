@@ -99,6 +99,7 @@ class Connection:
     def send(self, topic: str, message: str):
         self.client.publish(topic, message)
 
+
 class neopixel:
     class NeoPixel:
         def __init__(self, board: board, number_of_diodes: int, brightness: float, auto_write: bool) -> None:
@@ -110,6 +111,7 @@ class neopixel:
 
         def __getitem__(self, index: int) -> int:
             return self.diodes[index]
+
 
 class board:
     class D18:
@@ -202,5 +204,3 @@ class MyBuzzer:
 
     def off(self):
         GPIO.output(self.pin, True)
-
-

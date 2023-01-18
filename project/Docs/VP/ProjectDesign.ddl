@@ -1,0 +1,16 @@
+CREATE TABLE card (Id SERIAL NOT NULL, RFID_tag int4, employeeId int4 NOT NULL, card_statusId int4 NOT NULL, PRIMARY KEY (Id));
+CREATE TABLE employee (Id SERIAL NOT NULL, first_name varchar(255), Last_name varchar(255), access_levelId int4 NOT NULL, PRIMARY KEY (Id));
+CREATE TABLE access_level (Id SERIAL NOT NULL, level varchar(255), PRIMARY KEY (Id));
+CREATE TABLE card_status (Id SERIAL NOT NULL, status varchar(255), PRIMARY KEY (Id));
+CREATE TABLE device (Id SERIAL NOT NULL, mac_address varchar(255), PRIMARY KEY (Id));
+CREATE TABLE door (Id SERIAL NOT NULL, description varchar(255), deviceId int4 NOT NULL, access_levelId int4 NOT NULL, PRIMARY KEY (Id));
+CREATE TABLE authorization_message (Id SERIAL NOT NULL, "date" timestamp, cardId int4 NOT NULL, deviceId int4 NOT NULL, authorization_message_statusId int4 NOT NULL, PRIMARY KEY (Id));
+CREATE TABLE authorization_message_status (Id SERIAL NOT NULL, status varchar(255), PRIMARY KEY (Id));
+ALTER TABLE employee ADD CONSTRAINT FKemployee943934 FOREIGN KEY (access_levelId) REFERENCES access_level (Id);
+ALTER TABLE card ADD CONSTRAINT FKcard552886 FOREIGN KEY (employeeId) REFERENCES employee (Id);
+ALTER TABLE card ADD CONSTRAINT FKcard235613 FOREIGN KEY (card_statusId) REFERENCES card_status (Id);
+ALTER TABLE door ADD CONSTRAINT FKdoor874510 FOREIGN KEY (deviceId) REFERENCES device (Id);
+ALTER TABLE authorization_message ADD CONSTRAINT FKauthorizat676564 FOREIGN KEY (cardId) REFERENCES card (Id);
+ALTER TABLE authorization_message ADD CONSTRAINT FKauthorizat82390 FOREIGN KEY (deviceId) REFERENCES device (Id);
+ALTER TABLE authorization_message ADD CONSTRAINT FKauthorizat680726 FOREIGN KEY (authorization_message_statusId) REFERENCES authorization_message_status (Id);
+ALTER TABLE door ADD CONSTRAINT FKdoor437543 FOREIGN KEY (access_levelId) REFERENCES access_level (Id);

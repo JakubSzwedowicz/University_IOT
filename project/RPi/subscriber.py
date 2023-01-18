@@ -1,6 +1,12 @@
 from Utils.common import Connection, TOPIC
 
 
+class DevicesSetHandler:
+    def __init__(self, card_reader_with_leds: Dict[MFRC522, List[ILEDHandler]]) -> None:
+        self.card_reader_with_leds = card_reader_with_leds
+        
+    def 
+
 class Subscriber(Connection):
     def __init__(self):
         super().__init__()

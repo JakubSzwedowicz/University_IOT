@@ -1,0 +1,34 @@
+{
+    "devices": {
+        "1": {
+            "mac_address": "0D:40:0B:00:0C:01",
+            "door_description": "Main building entry",
+            "door_access_level": "L1"            
+        },
+        "2": {
+            "mac_address": "FF:0F:CD:00:23:10",
+            "door_description": "Floor 1 entry",
+            "door_access_level": "L1"        
+        },
+        "3": {
+            "mac_address": "AF:B3:5A:11:2D:BB",
+            "door_description": "Lab 1-1 entry",
+            "door_access_level": "L2"
+        },
+        "4": {
+            "mac_address": "0D:40:0B:00:0C:01",
+            "door_description": "Lab 1-2 entry",
+            "door_access_level": "L2"
+        },
+        "5": {
+            "mac_address": "AC:40:BB:CD:0C:43",
+            "door_description": "Lab 1-3 entry",
+            "door_access_level": "L3"
+        },
+        "6": {
+            "mac_address": "EF:BB:A3:FF:0C:D4",
+            "door_description": "Floor 2 entry",
+            "door_access_level": "L1"
+        }
+    }
+}
