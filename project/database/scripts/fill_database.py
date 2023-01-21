@@ -4,7 +4,7 @@ from configparser import ConfigParser
 from psycopg2.extras import execute_values
 import psycopg2
 
-from utils import is_database_empty, Quries, Generator, DatabaseData, insert_many
+from .utils import is_database_empty, Quries, Generator, DatabaseData, insert_many
 
 
 def generate_data1(entity_generator: callable, range_generator: callable) -> list:

@@ -87,8 +87,8 @@ def is_database_empty() -> bool:
 
 
 class DatabaseData:
-    _json_data_definitions = _read_json_file("resources/data_definitions.json")
-    json_devices_configuration = _read_json_file("../RPi/devices_configuration.json")
+    _json_data_definitions = _read_json_file("database/resources/data_definitions.json")
+    json_devices_configuration = _read_json_file("RPi/devices_configuration.json")
 
     @staticmethod
     def get_database_entity_definition(entity: str) -> List[str]:
@@ -126,37 +126,90 @@ class DatabaseData:
     
 
 class Quries:
-    @staticmethod
-    def get_access_level_insert_query() -> str:
-        return "INSERT INTO access_level (level) VALUES %s"
+    class Insert:
+        @staticmethod
+        def get_access_level_insert_query() -> str:
+            return "INSERT INTO access_level (level) VALUES %s"
 
-    @staticmethod
-    def get_employee_insert_query() -> str:
-        return "INSERT INTO employee (first_name, last_name, access_levelId) VALUES %s"
+        @staticmethod
+        def get_employee_insert_query() -> str:
+            return "INSERT INTO employee (first_name, last_name, access_levelId) VALUES %s"
 
-    @staticmethod
-    def get_card_insert_query() -> str:
-        return "INSERT INTO card (RFID_tag, employeeId, card_statusId) VALUES %s"
+        @staticmethod
+        def get_card_insert_query() -> str:
+            return "INSERT INTO card (RFID_tag, employeeId, card_statusId) VALUES %s"
 
-    @staticmethod
-    def get_card_status_insert_query() -> str:
-        return "INSERT INTO card_status (status) VALUES %s"
+        @staticmethod
+        def get_card_status_insert_query() -> str:
+            return "INSERT INTO card_status (status) VALUES %s"
 
-    @staticmethod
-    def get_device_insert_query() -> str:
-        return "INSERT INTO device (mac_address) VALUES %s"
+        @staticmethod
+        def get_device_insert_query() -> str:
+            return "INSERT INTO device (mac_address) VALUES %s"
 
-    @staticmethod
-    def get_door_insert_query() -> str:
-        return "INSERT INTO door (description, deviceId, access_levelId) VALUES %s"
+        @staticmethod
+        def get_door_insert_query() -> str:
+            return "INSERT INTO door (description, deviceId, access_levelId) VALUES %s"
 
-    @staticmethod
-    def get_authorization_message_insert_query() -> str:
-        return "INSERT INTO authorization_message (date, cardId, deviceId, authorization_message_statusId) VALUES %s"
+        @staticmethod
+        def get_authorization_message_insert_query() -> str:
+            return "INSERT INTO authorization_message (date, cardId, deviceId, authorization_message_statusId) VALUES %s"
 
-    @staticmethod
-    def get_authorization_message_status_insert_status() -> str:
-        return "INSERT INTO authorization_message_status (status) VALUES %s"
+        @staticmethod
+        def get_authorization_message_status_insert_query() -> str:
+            return "INSERT INTO authorization_message_status (status) VALUES %s"
+
+    class Select:
+        @staticmethod
+        def get_access_level_select_query() -> str:
+            return "SELECT * FROM access_level"
+
+        @staticmethod
+        def get_employee_select_query() -> str:
+            return "SELECT * FROM employee"
+
+        @staticmethod
+        def get_card_select_query() -> str:
+            return "SELECT * FROM card"
+
+        @staticmethod
+        def get_card_status_select_query() -> str:
+            return "SELECT * FROM card_status"
+
+        @staticmethod
+        def get_device_select_query() -> str:
+            return "SELECT * FROM device"
+
+        @staticmethod
+        def get_door_select_query() -> str:
+            return "SELECT * FROM door"
+
+        @staticmethod
+        def get_authorization_message_select_query() -> str:
+            return "SELECT * FROM authorization_message"
+
+        @staticmethod
+        def get_authorization_message_status_select_query() -> str:
+            return "SELECT * FROM authorization_message_status"
+        
+        class Where:
+            @staticmethod
+            def get_employee_by_rfid_tag_query(rfid_tag: int) -> str:
+                return "SELECT * FROM employee \
+                    WHERE id = \
+                        (SELECT employeeId FROM card \
+                            WHERE RFID_tag = %s)"
+                        
+            @staticmethod
+            def get_access_level_card_by_rfid_tag_query(rfid_tag: int) -> str:
+                return "SELECT * FROM access_level \
+                    Where id = \
+                        (SELECT access_levelId FROM employee \
+                            WHERE id = \
+                                (SELECT employeeId FROM card \
+                                    WHERE RFID_tag = %s) \
+                        )"
+            
 
 
 class Generator:
