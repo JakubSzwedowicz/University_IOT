@@ -55,6 +55,7 @@ class Connection:
         self.client.loop_stop()
 
     def send(self, topic: str, message: str):
+        print(f'Published message: "{message}" to topic: "{topic}"')
         self.client.publish(topic, message)
         
 class IPublisherSubscriber(Connection):

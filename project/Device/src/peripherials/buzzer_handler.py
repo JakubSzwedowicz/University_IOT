@@ -12,10 +12,12 @@ else:
             self._is_on = False
 
         def on(self):
+            print(f'Buzzer set to on')
             self._is_on = True
             GPIO.output(self.pin, False)
 
         def off(self):
+            print(f'Buzzer set to off')
             self._is_on = False
             GPIO.output(self.pin, True)
             

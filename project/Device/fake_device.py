@@ -1,4 +1,4 @@
-from src.device.real_device import device_handler
+from src.device import device_handler
 
 if __name__ == '__main__':
     device = device_handler.DeviceHandler()

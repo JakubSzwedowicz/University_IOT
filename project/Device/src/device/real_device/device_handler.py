@@ -53,35 +53,52 @@ class DeviceHandler(IPublisherSubscriber):
         self.authorization_message_statuses = [
             "request", "accepted", "declined"]
         self.message_response_handlers = {}
-        self.sent_messages: set = {}
+        self.sent_messages: set = set()
         self.current_callback: Optional[List[_Callback]] = None
+        self._runnable = self._run
 
         self._subscribe_and_handle_responses()
 
     def run(self):
         print(f'IP address: {self.ip_address}')
+        
+        self._runnable()
+
+    def _run(self):
         self.connect()
-
         while True:
-            sleep(0.1)
-            maybe_uid = self.RFID_handler.read()
-            if maybe_uid is not None:
-                print(f'RFID Card Detected {maybe_uid}')
-                self.send_door_access_request(maybe_uid)
-            self.process_callables()
-            
+            self.main_loop()
         self.disconnect()
-
+    
+    def _change_runnable(self, new_runnable: callable):
+        self._runnable = new_runnable
+        
+    def main_loop(self):
+        sleep(0.1)
+        print('Checking for RFID Card...')
+        maybe_uid = self.RFID_handler.read()
+        if maybe_uid is not None:
+            print(f'RFID Card Detected "{maybe_uid}"')
+            self.send_door_access_request(maybe_uid)
+        else:
+            print("No RFID Card Detected")
+        self.process_callables()
+        
     def process_callables(self) -> None:
         to_remove = []
+        print('Inside process_callables')
         if self.current_callback is not None:
+            print('Processing callables...')
             for call in self.current_callback:
                 if not call.is_done():
+                    print('Calling...')
                     call()
                 else:
+                    print('About to remove...')
                     to_remove.append(call)
             if self.to_remove is not None:
                 for removable in to_remove:
+                    print('Removing...')
                     self.current_callback.remove(removable)
 
     def process_message(self, client, userdata, message: MQTTMessage) -> None:
@@ -133,7 +150,9 @@ class DeviceHandler(IPublisherSubscriber):
             self._add_response_handler(topic)
 
     def _add_response_handler(self, topic: str) -> None:
+        print(f'Checing response handler for "{topic}"')
         if topic == self.__TOPIC_DOOR_ACCESS:
+            print(f'Adding response handler for "{topic}"')
             self.message_response_handlers[self.__TOPIC_DOOR_ACCESS] = {
                 self.__RESPONSE_CALL_HANDLER: self._handle_message_for_door_access_authorization,
                 self.__RESPONSE_CALL_PARSER: MessageParser.DoorAccessMessage,
