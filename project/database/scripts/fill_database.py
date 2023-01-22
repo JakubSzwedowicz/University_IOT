@@ -4,7 +4,7 @@ from configparser import ConfigParser
 from psycopg2.extras import execute_values
 import psycopg2
 
-from .utils import is_database_empty, Quries, Generator, DatabaseData, insert_many
+from .utils import DatabaseAdapter, Quries, Generator, DatabaseData
 
 
 def generate_data1(entity_generator: callable, range_generator: callable) -> list:
@@ -35,7 +35,7 @@ def populate_static_tables():
 
     for callable_entity_generator, callable_all_values, callable_query in mapping:
         formatted_data = generate_data1(callable_entity_generator, callable_all_values)
-        insert_many(callable_query(), formatted_data)
+        DatabaseAdapter.insert_many(callable_query(), formatted_data)
 
 
 def populate_dynamic_tables():
@@ -64,18 +64,18 @@ def populate_dynamic_tables():
         quantity, generator, args, query = data.values()
         # print(f"Generating {quantity} {table} entities with args {args} using query {query()}...")
         formatted_data = generate_data2(quantity, generator, args)
-        insert_many(query(), formatted_data)
+        DatabaseAdapter.insert_many(query(), formatted_data)
 
     data = list()
     for device_id, device_door_data in DatabaseData.get_device_entity_definitions().items():
         data.append(Generator.gen_door(device_door_data["door_description"], device_id,
                                        device_door_data["door_access_level"][1]))
     formatted_data = list(map(eval, data))
-    insert_many(Quries.get_door_insert_query(), formatted_data)
+    DatabaseAdapter.insert_many(Quries.get_door_insert_query(), formatted_data)
 
 
 def main():
-    if is_database_empty():
+    if DatabaseAdapter.is_database_empty():
         populate_static_tables()
         populate_dynamic_tables()
         print('Finished populating tables')

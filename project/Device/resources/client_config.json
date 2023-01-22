@@ -1,0 +1,12 @@
+{
+    "config": {
+        "name": "Client access license",
+        "version": "1.0.0",
+        "description": "Configuration file used to establish communication between publishers and subscribers. It is required for the subscriber to use provided license key to access the publisher's content.",
+        "issuer": "Jakub Szwedowicz",
+        "mac_address": "0D:40:0B:00:0C:01",
+        "topics": {
+            "authorization/door_access" : "MessageParser.DoorAccessMessage"
+        }
+    }
+}
