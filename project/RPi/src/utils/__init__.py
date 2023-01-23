@@ -1,15 +1,15 @@
-FIRST_ENTRY_DIR = 'Device'
+FIRST_ENTRY_DIR = 'RPi'
 RESOURCES_DIR = 'resources'
 RESOURCES_PATH = f'{FIRST_ENTRY_DIR}/{RESOURCES_DIR}'
 
-CLIENT_CONFIG_PATH = f'{RESOURCES_PATH}/client_config.json'
+SERVER_CONFIG_PATH = f'{RESOURCES_PATH}/server_config.json'
+DEVICES_CONFIGURATION_PATH = f'{RESOURCES_PATH}/devices_configuration.json'
 
 # config.ini
 CONFIG_PATH = f'{RESOURCES_PATH}/config.ini'
 
-DEVICE_SECTION = 'device'
-DEVICE_SECTION_RUN_FAKE_DEVICE = 'run_fake_device'
-DEVICE_SECTION_OPEN_DOOR_DURATION = 'open_door_duration'
+CENTRAL_UNIT_SECTION = 'central unit'
+CENTRAL_UNIT_RUN_CENTRAL_UNIT = 'run_fake_central_unit'
 
 CONNECTION_SECTION = 'connection'
 CONNECTION_SECTION_IP_ADDRESS = 'ip_address'

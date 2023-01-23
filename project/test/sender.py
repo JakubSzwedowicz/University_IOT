@@ -17,7 +17,7 @@ client = mqtt.Client()
 window = tkinter.Tk()
 
 def call_worker(worker_name):
-    client.publish("worker/name", worker_name + "." + terminal_id,)
+    client.publish("authorization/door_access", worker_name + "." + terminal_id,)
 
 
 def create_main_window():

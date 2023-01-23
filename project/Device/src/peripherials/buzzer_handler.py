@@ -1,11 +1,12 @@
-from ..utils.utils import use_fake_device
+from ..utils.utils import get_use_fake_device
 
-if use_fake_device():
+if get_use_fake_device():
     from .fake_peripherials.my_buzzer import MyBuzzer
-    from .fake_peripherials.fake_config import *
+    from common.fake_config import *
 else:
     from RPi.GPIO import GPIO
-    from Utils.config import *
+    from common.real_config import *
+    
     class MyBuzzer:
         def __init__(self, pin: int=buzzerPin):
             self.pin = pin

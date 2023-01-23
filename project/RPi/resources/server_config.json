@@ -1,0 +1,11 @@
+{
+    "config": {
+        "name": "Server access license",
+        "version": "1.0.0",
+        "description": "Configuration file used to establish communication between publishers and subscribers. It is required for the subscriber to use provided license key to access the publisher's content.",
+        "issuer": "Jakub Szwedowicz",
+        "topics": {
+            "authorization/door_access" : "MessageParser.DoorAccessMessage"
+        }
+    }
+}

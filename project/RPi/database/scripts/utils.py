@@ -1,10 +1,12 @@
-from configparser import ConfigParser
-import psycopg2
-from psycopg2.extras import execute_values
 import json
-from typing import List, Dict, Tuple
-from random import choice, randint
+from random import randint
+from typing import List, Dict, Tuple, Optional
+from configparser import ConfigParser
+from datetime import datetime
+
+import psycopg2
 from faker import Faker
+from psycopg2.extras import execute_values
 
 _faker = Faker()
 
@@ -16,9 +18,9 @@ def _read_json_file(path: str) -> dict:
 
 class DatabaseData:
     _json_data_definitions = _read_json_file(
-        "database/resources/data_definitions.json")
+        "RPi/database/resources/data_definitions.json")
     json_devices_configuration = _read_json_file(
-        "RPi/devices_configuration.json")
+        "RPi/resources/devices_configuration.json")
 
     @staticmethod
     def get_database_entity_definition(entity: str) -> List[str]:
@@ -85,7 +87,7 @@ class DatabaseData:
                 self.mac_address = mac_address
         
         class Door:
-            def __init(self, id: int, description: str, device_id: int, access_level_id: int):
+            def __init__(self, id: int, description: str, device_id: int, access_level_id: int):
                 self._id = id
                 self.description = description
                 self._device_id = device_id
@@ -179,21 +181,21 @@ class Quries:
                     INNER JOIN card_status ON card.card_statusId = card_status.id \
                     INNER JOIN employee ON card.employeeId = employee.id \
                     INNER JOIN access_level ON employee.access_levelId = access_level.id \
-                    WHERE card.RFID_tag = %s"
+                    WHERE card.RFID_tag = {}"
 
             @staticmethod
             def get_device_door_access_level_by_mac_address_query() -> str:
                 return "SELECT device.id, device.mac_address, door.id, door.description, door.deviceId, door.access_levelId, access_level.id, access_level.level FROM device \
                     INNER JOIN door ON device.id = door.deviceId \
                     INNER JOIN access_level ON door.access_levelId = access_level.id \
-                    WHERE device.mac_address = %s"
+                    WHERE device.mac_address = '{}'"
             
             @staticmethod
             def get_employee_by_rfid_tag_query() -> str:
                 return "SELECT * FROM employee \
                     WHERE id = \
                         (SELECT employeeId FROM card \
-                            WHERE RFID_tag = %s)"
+                            WHERE RFID_tag = '{}')"
 
             @staticmethod
             def get_access_level_card_by_rfid_tag_query() -> str:
@@ -202,7 +204,7 @@ class Quries:
                         (SELECT access_levelId FROM employee \
                             WHERE id = \
                                 (SELECT employeeId FROM card \
-                                    WHERE RFID_tag = %s) \
+                                    WHERE RFID_tag = {}) \
                         )"
 
             @staticmethod
@@ -210,8 +212,32 @@ class Quries:
                 return "SELECT * FROM card_status \
                     WHERE id = \
                         (SELECT card_statusId FROM card \
-                            WHERE RFID_tag = %s)"
+                            WHERE RFID_tag = {})"
+                            
+                            
+            @staticmethod
+            def get_access_level_card_by_rfid_tag_query() -> str:
+                return "SELECT * FROM access_level \
+                    Where id = \
+                        (SELECT access_levelId FROM employee \
+                            WHERE id = \
+                                (SELECT employeeId FROM card \
+                                    WHERE RFID_tag = {}) \
+                        )"
 
+            @staticmethod
+            def get_access_level_by_level_query() -> str:
+                return "SELECT * FROM access_level WHERE level = '{}'"
+            
+            @staticmethod
+            def get_door_by_deviceId_query() -> str:
+                return "SELECT * FROM door WHERE deviceId = {}"
+            
+            @staticmethod
+            def get_device_by_mac_address_query() -> str:
+                return "SELECT * FROM device WHERE mac_address = '{}'"
+            
+            
 
 class Generator:
     @staticmethod
@@ -264,7 +290,8 @@ class Generator:
 
 
 class DatabaseAdapter:
-    def config(filename=r"resources/config.ini", section='postgresql') -> dict:
+    @staticmethod
+    def config(filename=r"RPi/database/resources/config.ini", section='postgresql') -> dict:
         # create a parser
         parser = ConfigParser()
         # read config file
@@ -282,12 +309,13 @@ class DatabaseAdapter:
 
         return db
 
+    @staticmethod
     def connect() -> None:
         """ Connect to the PostgreSQL database server """
         conn = None
         try:
             # read connection parameters
-            params = config()
+            params = DatabaseAdapter.config()
 
             # connect to the PostgreSQL server
             print('Connecting to the PostgreSQL database...')
@@ -313,11 +341,12 @@ class DatabaseAdapter:
                 conn.close()
                 print('Database connection closed.')
 
+    @staticmethod
     def is_database_empty() -> bool:
         optional_record = True
         conn = None
         try:
-            params = config()
+            params = DatabaseAdapter.config()
             conn = psycopg2.connect(**params)
 
             cur = conn.cursor()
@@ -333,10 +362,11 @@ class DatabaseAdapter:
                 conn.close()
             return optional_record is None
 
+    @staticmethod
     def insert_many(insert_query, data) -> None:
         conn = None
         try:
-            params = config()
+            params = DatabaseAdapter.config()
             conn = psycopg2.connect(**params)
             cur = conn.cursor()
             psycopg2.extras.execute_values(cur, insert_query, data)
@@ -365,9 +395,10 @@ class DatabaseAdapter:
                     cur.execute(filled_query)
 
                     row = cur.fetchone()
-                    if len(row) != 11:
+                    expected_row_length = 11
+                    if row is None or len(row) != expected_row_length:
                         raise Exception(
-                            "Wrong number of columns in query result!")
+                            f'Wrong number of columns in query "{row}". Len: "{0 if row is None else len(row)}" instead of "{expected_row_length}"!')
 
                     card_status = DatabaseData.Definitions.CardStatus(
                         row[0], row[1])
@@ -402,13 +433,14 @@ class DatabaseAdapter:
                     cur.execute(filled_query)
 
                     row = cur.fetchone()
-                    if len(row) != 7:
+                    expected_row_length = 8
+                    if len(row) != expected_row_length:
                         raise Exception(
-                            "Wrong number of columns in query result!")
+                            f'Wrong number of columns in query result "{row}": {len(row)}" instead of "{expected_row_length}"!')
                     
                     device = DatabaseData.Definitions.Device(row[0], row[1])
-                    door = DatabaseData.Definitions.Door(row[2], row[3], row[4])
-                    access_level = DatabaseData.Definitions.AccessLevel(row[5], row[6])
+                    door = DatabaseData.Definitions.Door(row[2], row[3], row[4], row[5])
+                    access_level = DatabaseData.Definitions.AccessLevel(row[6], row[7])
                     
                     cur.close()
                 except (Exception, psycopg2.DatabaseError) as error:
@@ -417,15 +449,158 @@ class DatabaseAdapter:
                     if conn is not None:
                         conn.close()
                         return (device, door, access_level) \
-                            if (device is not None and door is not None and access_level is None) \
+                            if device is not None and door is not None and access_level is not None \
                             else None
+                            
+            @staticmethod
+            def get_device_by_mac_address(device_mac_address: str) -> Optional[DatabaseData.Definitions.Device]:
+                conn = None
+                device = None
+                try:
+                    params = DatabaseAdapter.config()
+                    conn = psycopg2.connect(**params)
+                    cur = conn.cursor()
+                    filled_query = Quries.Select.Where.get_device_by_mac_address_query().format(device_mac_address)
+                    cur.execute(filled_query)
+
+                    row = cur.fetchone()
+                    expected_row_length = 2
+                    if len(row) != expected_row_length:
+                        raise Exception(
+                            f'Wrong number of columns in query result, "{row}" instead of "{expected_row_length}"!')
+                    
+                    device = DatabaseData.Definitions.Device(row[0], row[1])
+                    
+                    cur.close()
+                except (Exception, psycopg2.DatabaseError) as error:
+                    print(error)
+                finally:
+                    if conn is not None:
+                        conn.close()
+                    return device
                 
             @staticmethod
-            def get_access_level_card_by_rfid_tag_query(rfid_tag: int) -> str:
-                return "SELECT * FROM access_level \
-                    Where id = \
-                        (SELECT access_levelId FROM employee \
-                            WHERE id = \
-                                (SELECT employeeId FROM card \
-                                    WHERE RFID_tag = %s) \
-                        )"
+            def get_access_level_by_level(level: str) -> Optional[DatabaseData.Definitions.AccessLevel]:
+                conn = None
+                access_level = None
+                try:
+                    params = DatabaseAdapter.config()
+                    conn = psycopg2.connect(**params)
+                    cur = conn.cursor()
+                    filled_query = Quries.Select.Where.get_access_level_by_level_query().format(level)
+                    cur.execute(filled_query)
+
+                    row = cur.fetchone()
+                    expected_row_length = 2
+                    if len(row) != expected_row_length:
+                        raise Exception(
+                            f'Wrong number of columns in query result, "{row}" instead of "{expected_row_length}"!')
+                    
+                    access_level = DatabaseData.Definitions.AccessLevel(row[0], row[1])
+                    
+                    cur.close()
+                except (Exception, psycopg2.DatabaseError) as error:
+                    print(error)
+                finally:
+                    if conn is not None:
+                        conn.close()
+                    return access_level
+                
+            @staticmethod
+            def get_door_by_deviceId(deviceId: int) -> Optional[DatabaseData.Definitions.Door]:
+                conn = None
+                door = None
+                try:
+                    params = DatabaseAdapter.config()
+                    conn = psycopg2.connect(**params)
+                    cur = conn.cursor()
+                    filled_query = Quries.Select.Where.get_door_by_deviceId_query().format(deviceId)
+                    cur.execute(filled_query)
+
+                    row = cur.fetchone()
+                    expected_row_length = 4
+                    if len(row) != expected_row_length:
+                        raise Exception(
+                            f'Wrong number of columns in query result, "{row}" instead of "{expected_row_length}"!')
+                    
+                    door = DatabaseData.Definitions.Door(row[0], row[1], row[2], row[3])
+                    
+                    cur.close()
+                except (Exception, psycopg2.DatabaseError) as error:
+                    print(error)
+                finally:
+                    if conn is not None:
+                        conn.close()
+                    return door
+    class Insert:
+        @staticmethod
+        def insert_device(mac_address: str) -> None:
+            conn = None
+            try:
+                params = DatabaseAdapter.config()
+                conn = psycopg2.connect(**params)
+                cur = conn.cursor()
+                filled_query = Quries.Insert.get_device_insert_query().format((mac_address,))
+                cur.execute(filled_query)
+                conn.commit()
+                cur.close()
+            except (Exception, psycopg2.DatabaseError) as error:
+                print(error)
+            finally:
+                if conn is not None:
+                    conn.close()
+                    
+        @staticmethod
+        def insert_door(description: str, deviceId: int, access_levelId) -> None:
+            conn = None
+            try:
+                params = DatabaseAdapter.config()
+                conn = psycopg2.connect(**params)
+                cur = conn.cursor()
+                filled_query = Quries.Insert.get_door_insert_query().format((description, deviceId, access_levelId,))
+                cur.execute(filled_query)
+                conn.commit()
+                cur.close()
+            except (Exception, psycopg2.DatabaseError) as error:
+                print(error)
+            finally:
+                if conn is not None:
+                    conn.close()
+        
+        @staticmethod            
+        def add_device_door_access_level_to_database(device_mac_address: str, door_description: str, door_access_level: str) -> Tuple[DatabaseData.Definitions.Device, DatabaseData.Definitions.Door, DatabaseData.Definitions.AccessLevel]:
+            device, door, access_level = DatabaseAdapter.Select.Where.get_device_door_access_level_by_mac_address(device_mac_address)
+            if device is None:
+                DatabaseAdapter.Insert.insert_device(device_mac_address)
+                print('New device added into the database!')
+                device = DatabaseAdapter.Select.Where.get_device_by_mac_address(device_mac_address)
+            if access_level is None:
+                access_level = DatabaseAdapter.Select.Where.get_access_level_by_level(door_access_level)
+                if access_level is None:
+                    raise Exception(
+                        f'Could not find access level in database!')
+            door = DatabaseAdapter.Select.Where.get_door_by_deviceId(device._id)
+            if door is None:
+                DatabaseAdapter.Insert.insert_door(door_description, device._id, access_level._id)
+                print('New door added into the database!')
+                door = DatabaseAdapter.Select.Where.get_door_by_deviceId(device._id)
+            if door is None:
+                print('Could not add door into the database!')
+            return (device, door, access_level)
+        
+        @staticmethod
+        def add_authorization_message_to_database(date: datetime, cardId: int, deviceId: int, authorization_message_statusId: int) -> None:
+            conn = None
+            try:
+                params = DatabaseAdapter.config()
+                conn = psycopg2.connect(**params)
+                cur = conn.cursor()
+                filled_query = Quries.Insert.get_authorization_message_insert_query().format((date, cardId, deviceId, authorization_message_statusId,))
+                cur.execute(filled_query)
+                conn.commit()
+                cur.close()
+            except (Exception, psycopg2.DatabaseError) as error:
+                print(error)
+            finally:
+                if conn is not None:
+                    conn.close()

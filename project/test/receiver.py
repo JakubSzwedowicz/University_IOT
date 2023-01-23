@@ -16,24 +16,25 @@ client = mqtt.Client()
 # Thw main window.
 window = tkinter.Tk()
 
-def process_message(client, userdata, message):
-    # Decode message.
-    message_decoded = (str(message.payload.decode("utf-8"))).split(".")
+class Worker:
+    def process_message(self, client, userdata, message):
+        # Decode message.
+        message_decoded = (str(message.payload.decode("utf-8"))).split(".")
 
-    # Print message to console.
-    if message_decoded[0] != "Client connected" and message_decoded[0] != "Client disconnected":
-        print(time.ctime() + ", " +
-              message_decoded[0] + " used the RFID card.")
+        # Print message to console.
+        if message_decoded[0] != "Client connected" and message_decoded[0] != "Client disconnected":
+            print(time.ctime() + ", " +
+                message_decoded[0] + " used the RFID card.")
 
-        # Save to sqlite database.
-        connention = sqlite3.connect("workers.db")
-        cursor = connention.cursor()
-        cursor.execute("INSERT INTO workers_log VALUES (?,?,?)",
-                       (time.ctime(), message_decoded[0], message_decoded[1]))
-        connention.commit()
-        connention.close()
-    else:
-        print(message_decoded[0] + " : " + message_decoded[1])
+            # Save to sqlite database.
+            connention = sqlite3.connect("workers.db")
+            cursor = connention.cursor()
+            cursor.execute("INSERT INTO workers_log VALUES (?,?,?)",
+                        (time.ctime(), message_decoded[0], message_decoded[1]))
+            connention.commit()
+            connention.close()
+        else:
+            print(message_decoded[0] + " : " + message_decoded[1])
 
 
 def print_log_to_window():
@@ -71,14 +72,15 @@ def create_main_window():
     print_log_button.pack(side="right")
 
 
+w = Worker()
 def connect_to_broker():
     # Connect to the broker.
     client.connect(broker, port=1883)
     # Send message about conenction.
-    client.on_message = process_message
+    client.on_message = w.process_message
     # Starts client and subscribe.
     client.loop_start()
-    client.subscribe("worker/name")
+    client.subscribe("authorization/door_access")
 
 
 def disconnect_from_broker():

@@ -1,13 +1,13 @@
 from typing import List
 from enum import Enum
-from ..utils.utils import use_fake_device
+from Device.src.utils.utils import get_use_fake_device
 
-if use_fake_device():
+if get_use_fake_device():
     from .fake_peripherials.neopixel import NeoPixel
-    from .fake_peripherials.fake_config import *
+    from  common.fake_config import *
     from .fake_peripherials.my_board import board
 else:
-    from Utils.config import *
+    from common.real_config import *
     from neopixel import NeoPixel
     import board as board
 
@@ -52,7 +52,7 @@ class _LEDHandler():
 
         @rgb.setter
         def rgb(self, rgb: Color):
-            self.r, self.g, self.b = rgb.value
+            self.r, self.g, self.b = rgb
 
     def __init__(self, diodes: NeoPixel, colors: List[InnerColor]):
         self._diodes = diodes
@@ -62,10 +62,11 @@ class _LEDHandler():
     def update_all(self):
         for i in range(len(self._colors)):
             self._diodes[i] = self._colors[i].rgb
+        print(f'LEDs updated to color "{Color(self._colors[0].rgb).name}"')
         self._diodes.show()
 
     def set_color_all(self, rgb: Color):
-        for color in self.__colors:
+        for color in self._colors:
             color.rgb = rgb
         self.update_all()
 

@@ -1,14 +1,12 @@
 from time import sleep, time
-import json
 from paho.mqtt.client import MQTTMessage
 from typing import Optional, List
 
-from src.peripherials.buzzer_handler import BuzzerHandler
-from src.peripherials.card_reader_handler import RFIDHandler
-from src.peripherials.leds_handler import LEDHandler
-from src.utils.communication import *
-from src.utils.utils import get_ip_address, get_port, get_open_door_duration, ClientConfig
-from src.utils.utils import CLIENT_CONFIG_PATH
+from common.communication import *
+from ...peripherials.buzzer_handler import BuzzerHandler
+from ...peripherials.card_reader_handler import RFIDHandler
+from ...peripherials.leds_handler import LEDHandler
+from ...utils.utils import get_ip_address, get_port, get_open_door_duration, ClientConfig
 
 
 class _Callback:
@@ -55,20 +53,22 @@ class DeviceHandler(IPublisherSubscriber):
         self.message_response_handlers = {}
         self.sent_messages: set = set()
         self.current_callback: Optional[List[_Callback]] = None
-        self._runnable = self._run
+        # self._runnable = self._run
 
-        self._subscribe_and_handle_responses()
 
     def run(self):
-        print(f'IP address: {self.ip_address}')
-        
-        self._runnable()
-
-    def _run(self):
         self.connect()
+        self._subscribe_and_handle_responses()
         while True:
             self.main_loop()
         self.disconnect()
+
+    # def _run(self):
+    #     self.connect()
+    #     self._subscribe_and_handle_responses()
+    #     while True:
+    #         self.main_loop()
+    #     self.disconnect()
     
     def _change_runnable(self, new_runnable: callable):
         self._runnable = new_runnable
@@ -77,6 +77,7 @@ class DeviceHandler(IPublisherSubscriber):
         sleep(0.1)
         print('Checking for RFID Card...')
         maybe_uid = self.RFID_handler.read()
+        # maybe_uid = 1
         if maybe_uid is not None:
             print(f'RFID Card Detected "{maybe_uid}"')
             self.send_door_access_request(maybe_uid)
@@ -86,20 +87,15 @@ class DeviceHandler(IPublisherSubscriber):
         
     def process_callables(self) -> None:
         to_remove = []
-        print('Inside process_callables')
         if self.current_callback is not None:
             print('Processing callables...')
             for call in self.current_callback:
                 if not call.is_done():
-                    print('Calling...')
                     call()
                 else:
-                    print('About to remove...')
                     to_remove.append(call)
-            if self.to_remove is not None:
-                for removable in to_remove:
-                    print('Removing...')
-                    self.current_callback.remove(removable)
+            for removable in to_remove:
+                self.current_callback.remove(removable)
 
     def process_message(self, client, userdata, message: MQTTMessage) -> None:
         message_handler = self.message_response_handlers[message.topic][self.__RESPONSE_CALL_HANDLER]
@@ -114,35 +110,38 @@ class DeviceHandler(IPublisherSubscriber):
 
         if self.client_config.get_mac_address() == device_mac_address:
             if rfid_tag not in self.sent_messages:
-                print(f'Received response with wrong rfid tag: "{rfid_tag}"!')
-            if messageStatus not in handlers:
-                print(f'Unknown message status: "{messageStatus}"!')
+                # print(f'Received response with wrong rfid tag: "{rfid_tag}"!')
                 return
+            if messageStatus not in handlers:
+                # print(f'Unknown message status: "{messageStatus}"!')
+                return
+            print(f'Received response to request with rfid tag: "{rfid_tag}"!')
+            self.sent_messages.remove(rfid_tag)
 
             message_handlers = handlers[messageStatus]
             for call in message_handlers[self.__RESPONSE_CALL_NOW]:
                 call()
 
+            print('Adding callback!')
             self.current_callback = [
                 _Callback(*args) for args in message_handlers[self.__RESPONSE_CALL_CALLBACKS]]
 
     def _request_accepted(self):
         self.buzzer.on()
         self.led.set_green()
-        print('Door is open')
+        print('Opening door')
 
     def _request_declined(self):
         self.buzzer.on()
         self.led.set_red()
-        print('Door is closed')
+        print('Door remains closed')
 
     def _accepted_callback(self):
         self.led.clear()
-        print('Door is closed')
+        print('Closing door...')
 
     def _declined_callback(self):
         self.led.clear()
-        print('Door is closed')
 
     def _subscribe_and_handle_responses(self) -> None:
         for topic in self.client_config.get_topics():
@@ -173,6 +172,6 @@ class DeviceHandler(IPublisherSubscriber):
         mac_address = self.client_config.get_mac_address()
 
         handler = self.message_response_handlers[self.__TOPIC_DOOR_ACCESS]
+        self.sent_messages.add(rfid_tag)
         super().send(self.__TOPIC_DOOR_ACCESS,
                      handler[self.__RESPONSE_CALL_PARSER].Request.serialize(status, mac_address, rfid_tag))
-        self.sent_messages.add(rfid_tag)

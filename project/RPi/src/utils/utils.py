@@ -1,5 +1,4 @@
 import json
-
 from configparser import ConfigParser
 from typing import Optional
 from functools import lru_cache
@@ -8,19 +7,11 @@ from . import *
 from common.utils import get_value_from_config
 
 @lru_cache(maxsize=1)
-def get_use_fake_device() -> bool:
+def get_use_fake_central_unit() -> bool:
     filename = CONFIG_PATH
-    section = DEVICE_SECTION
-    option = DEVICE_SECTION_RUN_FAKE_DEVICE
+    section = CENTRAL_UNIT_SECTION
+    option = CENTRAL_UNIT_RUN_CENTRAL_UNIT
     return get_value_from_config(filename, section, option, ConfigParser.getboolean)
-
-
-@lru_cache(maxsize=1)
-def get_open_door_duration() -> Optional[int]:
-    filename = CONFIG_PATH
-    section = DEVICE_SECTION
-    option = DEVICE_SECTION_OPEN_DOOR_DURATION
-    return get_value_from_config(filename, section, option, ConfigParser.getfloat)
 
 
 @lru_cache(maxsize=1)
@@ -39,22 +30,26 @@ def get_port() -> Optional[int]:
     return get_value_from_config(filename, section, option, ConfigParser.getint)
 
 
-class ClientConfig:
-    def __init__(self, client_config: Optional[dict]):
-        if ClientConfig._validate_json(client_config):
-            self.name = client_config["config"]["name"]
-            self.version = client_config["config"]["version"]
-            self.description = client_config["config"]["description"]
-            self.issuer = client_config["config"]["issuer"]
-            self.mac_address = client_config["config"]["mac_address"]
-            self.topics = client_config['config']["topics"]
+def get_devices_configuration() -> Optional[dict]:
+    filename = DEVICES_CONFIGURATION_PATH
+    with open(filename, 'r') as file:
+        return json.load(file)
+
+
+class ServerConfig:
+    def __init__(self, server_config: Optional[dict]):
+        if ServerConfig._validate_json(server_config):
+            self.name = server_config["config"]["name"]
+            self.version = server_config["config"]["version"]
+            self.description = server_config["config"]["description"]
+            self.issuer = server_config["config"]["issuer"]
+            self.topics = server_config['config']["topics"]
         else:
             print('Setting client config to default values')
             self.name = 'Default client config'
             self.version = '0.0.0'
             self.description = 'Using default configuration values'
             self.issuer = ''
-            self.mac_address = ''
             self.topics = {}
 
     def get_name(self) -> str:
@@ -69,18 +64,15 @@ class ClientConfig:
     def get_issuer(self) -> str:
         return self.issuer
 
-    def get_mac_address(self) -> str:
-        return self.mac_address
-
     def get_topics(self) -> dict:
         return self.topics
 
     @classmethod
-    def get_config(cls, filename: str = f'{CLIENT_CONFIG_PATH}') -> 'ClientConfig':
+    def get_config(cls, filename: str = f'{SERVER_CONFIG_PATH}') -> 'ServerConfig':
         try:
             with open(filename, 'r') as file:
                 parsed_json = json.load(file)
-                return ClientConfig(parsed_json)
+                return ServerConfig(parsed_json)
                 None
         except Exception as ex:
             print(
@@ -93,5 +85,25 @@ class ClientConfig:
             and "version" in client_config["config"] \
             and "description" in client_config["config"] \
             and "issuer" in client_config["config"] \
-            and "mac_address" in client_config["config"] \
-                and "topics" in client_config["config"]
+            and "topics" in client_config["config"]
+
+
+class _FuHandler:
+    def __init__(self, handler: callable):
+        self.handler = handler
+
+    def handle(self, message: dict):
+        self.handler(message)
+        
+class FunctionsHandler:
+    def __init__(self, topic: str, message: dict):
+        self.message = message
+        self.topic = topic
+        self._handlers = {}
+    
+    def on(self, trigger: object):
+        if trigger in self._handlers:
+            self._handlers[trigger].handle(self.message)
+    
+    def add_handler(self, handler: callable):
+        pass

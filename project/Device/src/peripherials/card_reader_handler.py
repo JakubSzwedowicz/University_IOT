@@ -1,12 +1,12 @@
 from abc import ABCMeta, abstractmethod
 from typing import Optional
-from ..utils.utils import use_fake_device
+from Device.src.utils.utils import get_use_fake_device
 
-if use_fake_device():
+if get_use_fake_device():
     from .fake_peripherials.card_reader import MFRC522
-    from .fake_peripherials.fake_config import *
+    from common.fake_config import *
 else:
-    from Utils.config import *
+    from common.real_config import *
     from mfrc522 import MFRC522
 
 
@@ -31,7 +31,7 @@ class RFIDHandler(IRFIDHandler):
                 self.is_read = True
                 (status, uid) = self.MIFAREReader.MFRC522_Anticoll()
                 if status == self.MIFAREReader.MI_OK:
-                    print(f'DEBUG PRINT 0:{uid[0]}, type:{type(uid[0])} size:{len(uid)}')
+                    print(f'Card reader, detected rfid "{uid[0]}"')
                     self.prev_status = status
                     return uid[0]
         # elif status == self.MIFAREReader.MI_ERR and self.prev_status == self.MIFAREReader.MI_ERR:

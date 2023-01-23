@@ -14,12 +14,12 @@ class MFRC522:
     def MFRC522_Request(self, arg):
         if self.successful:
             return self.MI_OK, "exampleTag"
-        return self.MI_ERR, "exampleTag"
+        return self.MI_NOTAGGER, "exampleTag"
 
     def MFRC522_Anticoll(self):
         if self.successful:
             return self.MI_OK, (f'{randint(0, 10000)}' if self.rfid is None else self.rfid)
-        return self.MI_ERR, "exampleUid"
+        return self.MI_NOTAGGER, "exampleUid"
 
     def switch_succesful(self):
         self.set_successful(not self.successful)

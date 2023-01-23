@@ -29,7 +29,7 @@ def populate_static_tables():
                (Generator.gen_authorization_message_status,
                 DatabaseData.get_authorization_message_status_entity_definition,
                 Quries.get_authorization_message_status_insert_status),
-               (Generator.gen_device, lambda: [device_door_data["mac_address"] for device_door_data in
+               (Generator.gen_device, lambda: [device_door_data["device_mac_address"] for device_door_data in
                                                DatabaseData.get_device_entity_definitions().values()],
                 Quries.get_device_insert_query)]
 
