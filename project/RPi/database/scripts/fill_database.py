@@ -23,15 +23,15 @@ def generate_data2(quantity: int, generator: callable, args: tuple) -> list:
 
 def populate_static_tables():
     mapping = [(Generator.gen_access_level, DatabaseData.get_access_level_entity_definition,
-                Quries.get_access_level_insert_query),
+                Quries.Insert.get_access_level_insert_query),
                (Generator.gen_card_status, DatabaseData.get_card_status_entity_definition,
-                Quries.get_card_status_insert_query),
+                Quries.Insert.get_card_status_insert_query),
                (Generator.gen_authorization_message_status,
                 DatabaseData.get_authorization_message_status_entity_definition,
-                Quries.get_authorization_message_status_insert_status),
+                Quries.Insert.get_authorization_message_status_insert_query),
                (Generator.gen_device, lambda: [device_door_data["device_mac_address"] for device_door_data in
                                                DatabaseData.get_device_entity_definitions().values()],
-                Quries.get_device_insert_query)]
+                Quries.Insert.get_device_insert_query)]
 
     for callable_entity_generator, callable_all_values, callable_query in mapping:
         formatted_data = generate_data1(callable_entity_generator, callable_all_values)
@@ -51,13 +51,13 @@ def populate_dynamic_tables():
     devices_ids_range = len(DatabaseData.get_device_entity_definitions())
 
     mapping = {"employee": {"quantity": employee_ids_range, "generator": Generator.gen_employee,
-                            "args": (access_levels_ids_range,), "query": Quries.get_employee_insert_query},
+                            "args": (access_levels_ids_range,), "query": Quries.Insert.get_employee_insert_query},
                "card": {"quantity": cards_ids_range, "generator": Generator.gen_card,
-                        "args": (card_status_ids_range, employee_ids_range), "query": Quries.get_card_insert_query},
+                        "args": (card_status_ids_range, employee_ids_range), "query": Quries.Insert.get_card_insert_query},
                "authorization_message": {"quantity": authorization_messages_ids_range,
                                          "generator": Generator.gen_authorization_message, "args": (
                        cards_ids_range, devices_ids_range, authorization_message_status_ids_range),
-                                         "query": Quries.get_authorization_message_insert_query}
+                                         "query": Quries.Insert.get_authorization_message_insert_query}
                }
 
     for table, data in mapping.items():
@@ -71,7 +71,7 @@ def populate_dynamic_tables():
         data.append(Generator.gen_door(device_door_data["door_description"], device_id,
                                        device_door_data["door_access_level"][1]))
     formatted_data = list(map(eval, data))
-    DatabaseAdapter.insert_many(Quries.get_door_insert_query(), formatted_data)
+    DatabaseAdapter.insert_many(Quries.Insert.get_door_insert_query(), formatted_data)
 
 
 def main():
