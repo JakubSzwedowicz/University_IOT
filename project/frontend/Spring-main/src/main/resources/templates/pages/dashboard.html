@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:th="http://www.w3.org/1999/xhtml"
+      layout:decorate="~{layout}">
+<head>
+    <title>Home</title>
+</head>
+<body>
+<section layout:fragment="content">
+    <div class="row">
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 grid-margin stretch-card">
+            <div class="card card-statistics">
+                <div class="card-body">
+                    <div class="clearfix">
+                        <div class="float-left">
+                            <i class="mdi mdi-cube text-danger icon-lg"></i>
+                        </div>
+                        <div class="float-right">
+                            <p class="mb-0 text-right">Devices</p>
+                            <div class="fluid-container">
+                                <h2 class="font-weight-medium text-right mb-0"><span th:text=${devices}></span></h2>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-muted mt-3 mb-0">
+                        <i class="mdi mdi-alert-octagon mr-1" aria-hidden="true"></i> Ilość uzywanych czytników
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 grid-margin stretch-card">
+            <div class="card card-statistics">
+                <div class="card-body">
+                    <div class="clearfix">
+                        <div class="float-left">
+                            <i class="mdi mdi-receipt text-warning icon-lg"></i>
+                        </div>
+                        <div class="float-right">
+                            <p class="mb-0 text-right">Card</p>
+                            <div class="fluid-container">
+                                <h2 class="font-weight-medium text-right mb-0"><span th:text=${card}></span></h2>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-muted mt-3 mb-0">
+                        <i class="mdi mdi-bookmark-outline mr-1" aria-hidden="true"></i> Ilość kart w systemie
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 grid-margin stretch-card">
+            <div class="card card-statistics">
+                <div class="card-body">
+                    <div class="clearfix">
+                        <div class="float-left">
+                            <i class="mdi mdi-poll-box text-success icon-lg"></i>
+                        </div>
+                        <div class="float-right">
+                            <p class="mb-0 text-right">Visits</p>
+                            <div class="fluid-container">
+                                <h2 class="font-weight-medium text-right mb-0"><span th:text=${visits}></span></h2>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-muted mt-3 mb-0">
+                        <i class="mdi mdi-calendar mr-1" aria-hidden="true"></i> Ilość wizytów w ciągu dnia
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 grid-margin stretch-card">
+            <div class="card card-statistics">
+                <div class="card-body">
+                    <div class="clearfix">
+                        <div class="float-left">
+                            <i class="mdi mdi-account-location text-info icon-lg"></i>
+                        </div>
+                        <div class="float-right">
+                            <p class="mb-0 text-right">Employees</p>
+                            <div class="fluid-container">
+                                <h2 class="font-weight-medium text-right mb-0"><span th:text=${totalEmployees}></span></h2>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-muted mt-3 mb-0">
+                        <i class="mdi mdi-reload mr-1" aria-hidden="true"></i> Ilość uzytkowników systemu
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+<!--    <div class="row">-->
+<!--        <div class="col-md-12 grid-margin">-->
+<!--            <div class="card">-->
+<!--                <div class="card-body">-->
+<!--                    <div class="row d-none d-sm-flex mb-4">-->
+<!--                        <div class="col-4">-->
+<!--                            <h5 class="text-primary">Unique Visitors</h5>-->
+<!--                            <p>34657</p>-->
+<!--                        </div>-->
+<!--                        <div class="col-4">-->
+<!--                            <h5 class="text-primary">Bounce Rate</h5>-->
+<!--                            <p>45673</p>-->
+<!--                        </div>-->
+<!--                        <div class="col-4">-->
+<!--                            <h5 class="text-primary">Active session</h5>-->
+<!--                            <p>45673</p>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="chart-container">-->
+<!--                        <canvas id="dashboard-area-chart" height="80"></canvas>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+    <div class="row">
+        <div class="col-lg-12 grid-margin">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Authorization message</h4>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>
+                                    Data
+                                </th>
+                                <th>
+                                    Card RFID tag
+                                </th>
+                                <th>
+                                    First Name
+                                </th>
+                                <th>
+                                    Last Name
+                                </th>
+
+                                <th>
+                                    Device Mac Adress
+                                </th>
+                                <th>
+                                    Status
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="authMess: ${authMesses}">
+                                <td class="text-danger">
+                                    <span th:text="${authMess.date}"></span>
+                                </td>
+                                <td>
+                                    <span th:text="${authMess.card.RFIDTag}"></span>
+                                </td>
+                                <td>
+                                    <span th:text="${authMess.card.employee.firstName}"></span>
+                                </td>
+                                <td>
+                                    <span th:text="${authMess.card.employee.lastName}"></span>
+                                </td>
+                                <td>
+                                    <span th:text="${authMess.device.macAddress}"></span>
+                                </td>
+
+                                <td th:if="${authMess.authorizationMessageStatus.status == 'declined'}">
+                                    <label class="badge badge-danger"><span th:text="${authMess.authorizationMessageStatus.status}"></span></label>
+                                </td>
+                                <td th:if="${authMess.authorizationMessageStatus.status == 'accepted'}">
+                                    <label class="badge badge-success"><span th:text="${authMess.authorizationMessageStatus.status}"></span></label>
+                                </td>
+                                <td th:if="${authMess.authorizationMessageStatus.status == 'request'}">
+                                    <label class="badge badge-warning"><span th:text="${authMess.authorizationMessageStatus.status}"></span></label>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+
+</body>
+</html>

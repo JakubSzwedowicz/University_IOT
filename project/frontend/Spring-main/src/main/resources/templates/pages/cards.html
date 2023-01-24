@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title>Home</title>
+</head>
+<body>
+<section layout:fragment="content">
+
+    <div class="row">
+
+        <div class="col-lg-12 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Cards</h4>
+                    <p class="card-description">
+                        All registered cards in system
+                    </p>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>
+                                    Card RFID tag
+                                </th>
+                                <th>
+                                    First Name
+                                </th>
+                                <th>
+                                    Last Name
+                                </th>
+                                <th>
+                                    Status
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="card: ${cards}">
+                                <td>
+                                    <span th:text="${card.RFIDTag}"></span>
+                                </td>
+                                <td>
+                                    <span th:text="${card.employee.firstName}"></span>
+                                </td>
+                                <td>
+                                    <span th:text="${card.employee.lastName}"></span>
+                                </td>
+
+                                <td th:if="${card.card_status.status == 'inactive'}">
+                                    <label class="badge badge-danger"><span th:text="${card.card_status.status}"></span></label>
+                                </td>
+                                <td th:if="${card.card_status.status == 'active'}">
+                                    <label class="badge badge-success"><span th:text="${card.card_status.status}"></span></label>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+</section>
+</body>
+</html>

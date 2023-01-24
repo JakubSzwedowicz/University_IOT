@@ -4,7 +4,7 @@ if get_use_fake_device():
     from .fake_peripherials.my_buzzer import MyBuzzer
     from common.fake_config import *
 else:
-    from RPi.GPIO import GPIO
+    import RPi.GPIO as GPIO
     from common.real_config import *
     
     class MyBuzzer:

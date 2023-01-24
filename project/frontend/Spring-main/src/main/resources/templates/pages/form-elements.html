@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <title>Home</title>
+</head>
+<body>
+<section layout:fragment="content">
+
+    <div class="row">
+        <div class="col-md-6 d-flex align-items-stretch grid-margin">
+            <div class="row flex-grow">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">Add card to the system</h4>
+                            <form method="POST" th:object="${formCard}" th:action="@{/pages/addNewCard}" class="forms-sample">
+                                <div class="form-group">
+                                    <label for="exampleInputRFID">RFIDTag</label>
+                                    <input type="text" class="form-control" id="exampleInputRFID" placeholder="RFIDTag" th:field="*{RFIDTag}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 col-form-label">Employee</label>
+                                    <div class="col-sm-9">
+                                        <label>
+                                            <select class="form-control" th:field="*{employeeLastName}">
+                                                <option th:value="${employee.lastName}" th:each="employee:${employees}"> <span th:text="${employee.lastName}"></span></option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-3 col-form-label">Status</label>
+                                    <div class="col-sm-9">
+                                        <select class="form-control" th:field="*{cardStatus}">
+                                            <option  th:value="${cardSt.status}" th:each="cardSt:${cardStatuses}"> <span th:text="${cardSt.status}"></span></option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-success mr-2">Submit</button>
+                                <button class="btn btn-light">Cancel</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 grid-margin stretch-card">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Add employee to the system</h4>
+                    <form method="POST" th:object="${formEmployee}" th:action="@{/pages/addNewEmployee}" class="forms-sample">
+                        <div class="form-group">
+                            <label for="exampleInputName1">FirstName</label>
+                            <input th:field="*{firstName}" type="text" class="form-control" id="exampleInputName1" placeholder="FirstName">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputName2">LastName</label>
+                            <input th:field="*{lastName}" type="text" class="form-control" id="exampleInputName2" placeholder="LastName">
+                        </div>
+                        <div class="form-group">
+                            <label class="col-sm-3 col-form-label">Status</label>
+                            <div class="col-sm-9">
+                                <select class="form-control" th:field="*{level}">
+                                    <option  th:value="${level.level}" th:each="level:${levels}"> <span th:text="${level.level}"></span></option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success mr-2">Submit</button>
+                        <button class="btn btn-light">Cancel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+</section>
+</body>
+</html>
