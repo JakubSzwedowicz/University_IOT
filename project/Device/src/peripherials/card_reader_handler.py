@@ -31,9 +31,10 @@ class RFIDHandler(IRFIDHandler):
                 self.is_read = True
                 (status, uid) = self.MIFAREReader.MFRC522_Anticoll()
                 if status == self.MIFAREReader.MI_OK:
-                    print(f'Card reader, detected rfid "{uid[0]}"')
+                    uid = uid if isinstance(uid, int) else uid[0]
+                    print(f'Card reader, detected rfid "{uid}"')
                     self.prev_status = status
-                    return uid[0]
+                    return uid
         # elif status == self.MIFAREReader.MI_ERR and self.prev_status == self.MIFAREReader.MI_ERR:
         elif status == self.MIFAREReader.MI_NOTAGGER and self.prev_status == self.MIFAREReader.MI_NOTAGGER:
             self.is_read = False

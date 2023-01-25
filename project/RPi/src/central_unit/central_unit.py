@@ -127,11 +127,10 @@ class CentralUnit(IPublisherSubscriber):
             
         database_card_status, database_card, database_employee, database_access_level = (query_result if query_result is not None else (
             None, DatabaseData.Definitions.Card(0, rfid_tag, 0, self._cards_statuses['inactive']), None, None))
-
         DatabaseAdapter.Insert.add_authorization_message_to_database(datetime.now(),
                                                                      database_card._id,
                                                                      self._mac_address_authorized_device_mapping[
-                                                                         device_mac_address].device_id,
+                                                                         device_mac_address]._id,
                                                                      self._authorization_message_status[messageStatus])
 
         handlers[messageStatus](
@@ -149,7 +148,7 @@ class CentralUnit(IPublisherSubscriber):
 
         if (database_card_status is not None and database_card_status.status == 'active') \
                 and (database_access_level is not None and int(database_access_level.level[1]) >= int(authorized_device.access_level[1])):
-            authorization_message_status = self.___FUNCTIONS_HANDLERS__ACCEPTED
+            authorization_message_status = self.__FUNCTIONS_HANDLERS__ACCEPTED
         else:
             authorization_message_status = self.__FUNCTIONS_HANDLERS__DECLINED
 
@@ -157,5 +156,6 @@ class CentralUnit(IPublisherSubscriber):
             authorization_message_status, authorized_device.mac_address, database_card.rfid_tag))
 
         date = datetime.now()
+        print(f'DATA: {date}')
         DatabaseAdapter.Insert.add_authorization_message_to_database(
             date, cardId, deviceId, self._authorization_message_status[authorization_message_status])

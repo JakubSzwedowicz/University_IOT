@@ -108,15 +108,16 @@ class DeviceHandler(IPublisherSubscriber):
         messageStatus, device_mac_address, rfid_tag = parser.Response.deserialize(
             message)
 
+        print('INSIDE!')
         if self.client_config.get_mac_address() == device_mac_address:
-            if rfid_tag not in self.sent_messages:
-                # print(f'Received response with wrong rfid tag: "{rfid_tag}"!')
+            if int(rfid_tag) not in self.sent_messages:
+                print(f'Received response with wrong rfid tag: "{rfid_tag}", type: "{type(rfid_tag)}". Sent ones are: "{self.sent_messages}", type: "{type(next(iter(self.sent_messages)))}"!')
                 return
             if messageStatus not in handlers:
-                # print(f'Unknown message status: "{messageStatus}"!')
+                print(f'Unknown message status: "{messageStatus}"!')
                 return
             print(f'Received response to request with rfid tag: "{rfid_tag}"!')
-            self.sent_messages.remove(rfid_tag)
+            self.sent_messages.remove(int(rfid_tag))
 
             message_handlers = handlers[messageStatus]
             for call in message_handlers[self.__RESPONSE_CALL_NOW]:
@@ -172,6 +173,7 @@ class DeviceHandler(IPublisherSubscriber):
         mac_address = self.client_config.get_mac_address()
 
         handler = self.message_response_handlers[self.__TOPIC_DOOR_ACCESS]
+        print(f'Sending "{rfid_tag}" of type: "{type(rfid_tag)}"')
         self.sent_messages.add(rfid_tag)
         super().send(self.__TOPIC_DOOR_ACCESS,
                      handler[self.__RESPONSE_CALL_PARSER].Request.serialize(status, mac_address, rfid_tag))

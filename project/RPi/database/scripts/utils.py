@@ -135,7 +135,7 @@ class Quries:
 
         @staticmethod
         def get_authorization_message_insert_query() -> str:
-            return "INSERT INTO authorization_message (date, cardId, deviceId, authorization_message_statusId) VALUES %s"
+            return "INSERT INTO authorization_message (date, cardId, deviceId, authorization_message_statusId) VALUES ('{}', {}, {}, {})"
 
         @staticmethod
         def get_authorization_message_status_insert_query() -> str:
@@ -395,7 +395,7 @@ class DatabaseAdapter:
                     cur.execute(filled_query)
 
                     row = cur.fetchone()
-                    expected_row_length = 11
+                    expected_row_length = 12
                     if row is None or len(row) != expected_row_length:
                         raise Exception(
                             f'Wrong number of columns in query "{row}". Len: "{0 if row is None else len(row)}" instead of "{expected_row_length}"!')
@@ -403,11 +403,11 @@ class DatabaseAdapter:
                     card_status = DatabaseData.Definitions.CardStatus(
                         row[0], row[1])
                     card = DatabaseData.Definitions.Card(
-                        row[2], row[3], row[4])
+                        row[2], row[3], row[4], row[5])
                     employee = DatabaseData.Definitions.Employee(
-                        row[5], row[6], row[7], row[8])
+                        row[6], row[7], row[8], row[9])
                     access_level = DatabaseData.Definitions.AccessLevel(
-                        row[9], row[10])
+                        row[10], row[11])
 
                     cur.close()
                 except (Exception, psycopg2.DatabaseError) as error:
@@ -416,7 +416,7 @@ class DatabaseAdapter:
                     if conn is not None:
                         conn.close()
                         return (card_status, card, employee, access_level) \
-                            if (card_status is not None and card is not None and employee is None and access_level is None) \
+                            if (card_status is not None and card is not None and employee is not None and access_level is not None) \
                             else None
             
             @staticmethod
@@ -595,7 +595,7 @@ class DatabaseAdapter:
                 params = DatabaseAdapter.config()
                 conn = psycopg2.connect(**params)
                 cur = conn.cursor()
-                filled_query = Quries.Insert.get_authorization_message_insert_query().format((date, cardId, deviceId, authorization_message_statusId,))
+                filled_query = Quries.Insert.get_authorization_message_insert_query().format(str(date), cardId, deviceId, authorization_message_statusId)
                 cur.execute(filled_query)
                 conn.commit()
                 cur.close()

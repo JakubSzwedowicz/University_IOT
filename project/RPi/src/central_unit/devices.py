@@ -2,7 +2,7 @@ from ...database.scripts.utils import DatabaseData
 
 class AuthorizedDevices(DatabaseData.Definitions.Device):
     def __init__(self, access_level, deviceId: int, mac_address: str) -> None:
-        super().__init__(id, mac_address)
+        super().__init__(deviceId, mac_address)
         self.access_level = access_level
     
 

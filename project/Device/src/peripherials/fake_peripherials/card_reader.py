@@ -9,7 +9,7 @@ class MFRC522:
 
     def __init__(self, successful: bool = False):
         self.successful = successful
-        self.rfid = None
+        self.rfid = 126
 
     def MFRC522_Request(self, arg):
         if self.successful:
